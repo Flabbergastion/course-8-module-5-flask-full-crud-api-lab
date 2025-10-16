@@ -17,38 +17,62 @@ events = [
     Event(2, "Python Workshop")
 ]
 
-# TODO: Task 1 - Define the Problem
 # Create a new event from JSON input
 @app.route("/events", methods=["POST"])
 def create_event():
-    # TODO: Task 2 - Design and Develop the Code
+    # Get JSON data from request
+    data = request.get_json()
+    
+    # Validate that title is provided
+    if not data or 'title' not in data:
+        return jsonify({"error": "Title is required"}), 400
+    
+    # Generate new ID (find the highest existing ID and add 1)
+    new_id = max([event.id for event in events], default=0) + 1
+    
+    # Create new event
+    new_event = Event(new_id, data['title'])
+    
+    # Add to events list
+    events.append(new_event)
+    
+    # Return the created event with 201 status
+    return jsonify(new_event.to_dict()), 201
 
-    # TODO: Task 3 - Implement the Loop and Process Each Element
-
-    # TODO: Task 4 - Return and Handle Results
-    pass
-
-# TODO: Task 1 - Define the Problem
 # Update the title of an existing event
 @app.route("/events/<int:event_id>", methods=["PATCH"])
 def update_event(event_id):
-    # TODO: Task 2 - Design and Develop the Code
+    # Get JSON data from request
+    data = request.get_json()
+    
+    # Validate that title is provided
+    if not data or 'title' not in data:
+        return jsonify({"error": "Title is required"}), 400
+    
+    # Find the event with the given ID
+    for event in events:
+        if event.id == event_id:
+            # Update the event's title
+            event.title = data['title']
+            # Return the updated event
+            return jsonify(event.to_dict()), 200
+    
+    # If event not found, return 404
+    return jsonify({"error": "Event not found"}), 404
 
-    # TODO: Task 3 - Implement the Loop and Process Each Element
-
-    # TODO: Task 4 - Return and Handle Results
-    pass
-
-# TODO: Task 1 - Define the Problem
 # Remove an event from the list
 @app.route("/events/<int:event_id>", methods=["DELETE"])
 def delete_event(event_id):
-    # TODO: Task 2 - Design and Develop the Code
-
-    # TODO: Task 3 - Implement the Loop and Process Each Element
-
-    # TODO: Task 4 - Return and Handle Results
-    pass
+    # Find and remove the event with the given ID
+    for i, event in enumerate(events):
+        if event.id == event_id:
+            # Remove the event from the list
+            events.pop(i)
+            # Return 204 No Content (successful deletion)
+            return '', 204
+    
+    # If event not found, return 404
+    return jsonify({"error": "Event not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
